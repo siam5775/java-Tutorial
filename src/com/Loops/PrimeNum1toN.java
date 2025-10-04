@@ -4,7 +4,7 @@ import java.util.*;
 
 public class PrimeNum1toN {
     public static void main(String[] args) {
-        try (Scanner sc = new Scanner(System.in)) {
+        Scanner sc = new Scanner(System.in);
             System.out.println("Enter a number: ");
             int Num = sc.nextInt();
 
@@ -31,6 +31,7 @@ public class PrimeNum1toN {
                     System.out.println(i);
                 }
             }
+            sc.close();
         }
     }
-}
+
