@@ -4,13 +4,13 @@ class Student{
    String name;
    int age; 
 
+   Student(){
+    System.out.println("constructor called");
+   }
+
    public void printinfo(){
     System.out.println(this.name);
     System.out.println(this.age);
-   }
-
-   Student(){
-    System.out.println("constructor called");
    }
 }
 

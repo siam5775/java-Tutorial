@@ -5,8 +5,8 @@ public class Algebra{
 
     Algebra(int x,int y){    //peramitarized Constractor
         System.out.println("Constractor of Algebra Class called");
-        a = x;
-        b = y;
+        this.a = x;
+        this.b = y;
     }
     int add(){
         return a+b;
