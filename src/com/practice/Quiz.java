@@ -95,8 +95,9 @@ public class Quiz extends JFrame {
         next.setFont(new Font("Tahoma", Font.PLAIN, 22)); 
         next.setBackground(new Color(30, 144, 255)); 
         next.setForeground(Color.WHITE); 
-        next.addActionListener(e -> { 
-            saveAnswer(); 
+        next.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e){
+                 saveAnswer(); 
             if (count == questions.length - 2) { 
                 next.setEnabled(false); 
                 submit.setEnabled(true); 
@@ -104,8 +105,10 @@ public class Quiz extends JFrame {
             count++; 
             start(count); 
             timer = 15; 
-        }); 
-        c.add(next); 
+        }
+    }); 
+        c.add(next);
+           
 
         submit = new JButton("Submit"); 
         submit.setBounds(1100, 550, 200, 40); 
@@ -113,7 +116,8 @@ public class Quiz extends JFrame {
         submit.setBackground(new Color(30, 144, 255)); 
         submit.setForeground(Color.WHITE); 
         submit.setEnabled(false); 
-        submit.addActionListener(e -> { 
+        submit.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e){ 
             saveAnswer(); 
             countdownTimer.stop(); 
             int score = 0; 
@@ -130,7 +134,8 @@ public class Quiz extends JFrame {
             scoreFrame.setResizable(false); 
             scoreFrame.setVisible(true); 
             scoreFrame.setLocationRelativeTo(null); 
-        }); 
+        }
+    }); 
         c.add(submit); 
 
         start(count); 
