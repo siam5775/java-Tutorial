@@ -25,7 +25,7 @@ public class Rules extends JFrame {
 
         heading = new JLabel("Welcome " + name + " to the " + subject + " Quiz");
         heading.setBounds(100, 20, 700, 30);
-        heading.setFont(new Font("Viner Hand ITC", Font.BOLD, 28));
+        heading.setFont(new Font("Times New Roman", Font.BOLD, 28));
         heading.setForeground(new Color(30, 144, 254));
         c.add(heading);
 
