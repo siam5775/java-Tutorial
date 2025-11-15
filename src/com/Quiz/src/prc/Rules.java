@@ -1,4 +1,4 @@
-package prc;
+package com.Quiz.src.prc;
 
 import java.awt.*;
 import java.awt.event.*;
