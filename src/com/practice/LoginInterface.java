@@ -67,7 +67,11 @@ public class LoginInterface extends JFrame {
                 }
             }
         });
-        back.addActionListener(e -> System.exit(0));
+        back.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e){
+                System.exit(0);
+            }
+        });
     }
 
     public static void main(String[] args) {

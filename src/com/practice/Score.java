@@ -76,7 +76,11 @@ public class Score extends JFrame {
                 login.setLocationRelativeTo(null);
             }
         });
-        exit.addActionListener(e -> System.exit(0));
+        exit.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e){
+                System.exit(0);
+            }
+        });
     }
 
     public static void main(String[] args) {
