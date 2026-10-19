@@ -19,37 +19,37 @@ public class Score extends JFrame {
     }
 
     public void initComponents(){
-        c = this.getContentPane();
-        c.setLayout(null);
-        c.setBackground(Color.WHITE);
+        c = QuizTheme.page();
+        this.setContentPane(c);
 
-        heading = new JLabel("Thank you " + name + " for taking the Quiz!");
-        heading.setBounds(165, 30, 700, 30);
-        heading.setFont(new Font("Tahoma", Font.PLAIN, 24));
-        c.add(heading);
+        JPanel card = QuizTheme.card(95, 55, 560, 405);
+        c.add(card);
 
-        lblscore = new JLabel("Your Score: " + score);
-        lblscore.setBounds(300, 100, 300, 30);
-        lblscore.setFont(new Font("Tahoma", Font.PLAIN, 22));
-        c.add(lblscore);
+        heading = QuizTheme.label("Great work, " + name + "!", 42, 34, 480, 42, QuizTheme.TITLE, QuizTheme.INK);
+        card.add(heading);
 
-        playAgain = new JButton("Play Again");
-        playAgain.setBounds(150, 280, 120, 25);
-        playAgain.setBackground(new Color(30, 144, 254));
-        playAgain.setForeground(Color.WHITE);
-        c.add(playAgain);
+        JLabel subheading = QuizTheme.label("Thank you for taking the quiz.", 44, 82, 430, 28, QuizTheme.SUBTITLE, QuizTheme.MUTED);
+        card.add(subheading);
 
-        exit = new JButton("Exit");
-        exit.setBounds(450, 280, 120, 25);
-        exit.setBackground(new Color(30, 144, 254));
-        exit.setForeground(Color.WHITE);
-        c.add(exit);
+        lblscore = QuizTheme.label("Your Score: " + score, 44, 140, 300, 46, new Font("Segoe UI", Font.BOLD, 28), QuizTheme.BRAND_DARK);
+        card.add(lblscore);
 
-        newuser = new JButton("New Login");
-        newuser.setBounds(300, 350, 150, 25);
-        newuser.setBackground(new Color(30, 144, 254));
-        newuser.setForeground(Color.WHITE);
-        c.add(newuser);
+        JProgressBar progress = new JProgressBar(0, 50);
+        progress.setBounds(44, 204, 472, 16);
+        progress.setValue(score);
+        progress.setForeground(score >= 30 ? QuizTheme.SUCCESS : QuizTheme.DANGER);
+        progress.setBackground(QuizTheme.SOFT_BLUE);
+        progress.setBorderPainted(false);
+        card.add(progress);
+
+        playAgain = QuizTheme.primaryButton("Play Again", 44, 284, 145, 42);
+        card.add(playAgain);
+
+        exit = QuizTheme.secondaryButton("Exit", 371, 284, 145, 42);
+        card.add(exit);
+
+        newuser = QuizTheme.secondaryButton("New Login", 208, 334, 145, 42);
+        card.add(newuser);
 
         // Score -> LoginInterface
         playAgain.addActionListener(new ActionListener() {

@@ -17,38 +17,35 @@ public class LoginInterface extends JFrame {
     }
 
     public void initComponents() {
-        c = this.getContentPane();
-        c.setLayout(null);
-        c.setBackground(Color.PINK);
+        c = QuizTheme.page();
+        this.setContentPane(c);
 
         img = new ImageIcon(getClass().getResource("login.jpeg"));
         imgLabel = new JLabel(img);
-        imgLabel.setBounds(50, 20, img.getIconWidth(), img.getIconHeight());
+        imgLabel.setBounds(70, 45, img.getIconWidth(), img.getIconHeight());
         c.add(imgLabel);
 
-        heading = new JLabel("Enter your name");
-        heading.setBounds(735, 120, 300, 50);
-        heading.setFont(new Font("Times New Roman", Font.BOLD, 25));
-        heading.setForeground(new Color(30, 144, 254));
-        c.add(heading);
+        JPanel card = QuizTheme.card(700, 62, 390, 330);
+        c.add(card);
+
+        heading = QuizTheme.label("Quiz Game", 36, 34, 320, 42, QuizTheme.TITLE, QuizTheme.INK);
+        card.add(heading);
+
+        JLabel subheading = QuizTheme.label("Enter your name to begin", 38, 82, 300, 28, QuizTheme.SUBTITLE, QuizTheme.MUTED);
+        card.add(subheading);
 
         tf1 = new JTextField();
-        tf1.setBounds(735, 200, 300, 25);
-        tf1.setFont(new Font("Arial", Font.PLAIN, 16));
-        tf1.setHorizontalAlignment(JTextField.CENTER);
-        c.add(tf1);
+        tf1.setBounds(38, 138, 314, 42);
+        QuizTheme.styleTextField(tf1);
+        card.add(tf1);
 
         play = new JButton("Play");
-        play.setBounds(735, 270, 120, 25);
-        play.setBackground(new Color(30, 144, 254));
-        play.setForeground(Color.WHITE);
-        c.add(play);
+        play = QuizTheme.primaryButton("Play", 38, 222, 145, 42);
+        card.add(play);
 
         back = new JButton("Back");
-        back.setBounds(915, 270, 120, 25);
-        back.setBackground(new Color(30, 144, 254));
-        back.setForeground(Color.WHITE);
-        c.add(back);
+        back = QuizTheme.secondaryButton("Back", 207, 222, 145, 42);
+        card.add(back);
 
         play.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {

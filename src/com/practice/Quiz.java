@@ -13,6 +13,7 @@ public class Quiz extends JFrame {
     private JRadioButton opt1, opt2, opt3, opt4; 
     private ButtonGroup options; 
     private JButton next, submit; 
+    private JPanel quizCard;
     private int timer = 15; 
     private int count = 0; 
     private String username, subject; 
@@ -36,49 +37,53 @@ public class Quiz extends JFrame {
     } 
 
     public void initComponents() { 
-        c = this.getContentPane(); 
-        c.setLayout(null); 
-        c.setBackground(Color.WHITE); 
+        c = QuizTheme.page(); 
+        this.setContentPane(c);
+
+        JLabel title = QuizTheme.label(subject + " Quiz", 112, 34, 500, 40, QuizTheme.TITLE, QuizTheme.INK);
+        c.add(title);
+
+        JLabel player = QuizTheme.label("Player: " + username, 114, 76, 420, 26, QuizTheme.SUBTITLE, QuizTheme.MUTED);
+        c.add(player);
+
+        quizCard = QuizTheme.card(110, 118, 1220, 590);
+        c.add(quizCard);
 
         qno = new JLabel(); 
-        qno.setBounds(100, 200, 50, 30); 
-        qno.setFont(new Font("Tahoma", Font.PLAIN, 24)); 
-        c.add(qno); 
+        qno.setBounds(52, 82, 54, 36); 
+        qno.setFont(new Font("Segoe UI", Font.BOLD, 26)); 
+        qno.setForeground(QuizTheme.BRAND_DARK);
+        quizCard.add(qno); 
 
         question = new JLabel(); 
-        question.setBounds(150, 200, 900, 30); 
-        question.setFont(new Font("Tahoma", Font.PLAIN, 24)); 
-        c.add(question); 
+        question.setBounds(106, 82, 780, 36); 
+        question.setFont(new Font("Segoe UI", Font.BOLD, 24)); 
+        question.setForeground(QuizTheme.INK);
+        quizCard.add(question); 
 
         timerLabel = new JLabel("Time left: 15 seconds"); 
-        timerLabel.setBounds(1100, 200, 300, 30); 
-        timerLabel.setFont(new Font("Tahoma", Font.BOLD, 20)); 
-        timerLabel.setForeground(Color.RED); 
-        c.add(timerLabel); 
+        timerLabel.setBounds(900, 36, 260, 36); 
+        timerLabel.setFont(QuizTheme.BODY_BOLD); 
+        timerLabel.setForeground(QuizTheme.DANGER); 
+        timerLabel.setHorizontalAlignment(SwingConstants.RIGHT);
+        quizCard.add(timerLabel); 
 
         opt1 = new JRadioButton(); 
-        opt1.setBounds(170, 270, 700, 30); 
-        opt1.setBackground(Color.WHITE); 
-        opt1.setFont(new Font("Dialog", Font.PLAIN, 20)); 
-        c.add(opt1); 
+        QuizTheme.styleOption(opt1, 72, 180, 800, 44);
+        quizCard.add(opt1); 
 
         opt2 = new JRadioButton(); 
-        opt2.setBounds(170, 320, 700, 30); 
-        opt2.setBackground(Color.WHITE); 
-        opt2.setFont(new Font("Dialog", Font.PLAIN, 20)); 
-        c.add(opt2); 
+        QuizTheme.styleOption(opt2, 72, 242, 800, 44);
+        quizCard.add(opt2); 
 
         opt3 = new JRadioButton(); 
-        opt3.setBounds(170, 370, 700, 30); 
-        opt3.setBackground(Color.WHITE); 
-        opt3.setFont(new Font("Dialog", Font.PLAIN, 20)); 
-        c.add(opt3); 
+
+        QuizTheme.styleOption(opt3, 72, 304, 800, 44);
+        quizCard.add(opt3); 
 
         opt4 = new JRadioButton(); 
-        opt4.setBounds(170, 420, 700, 30); 
-        opt4.setBackground(Color.WHITE); 
-        opt4.setFont(new Font("Dialog", Font.PLAIN, 20)); 
-        c.add(opt4); 
+        QuizTheme.styleOption(opt4, 72, 366, 800, 44);
+        quizCard.add(opt4); 
 
         options = new ButtonGroup(); 
         options.add(opt1); 
@@ -91,10 +96,7 @@ public class Quiz extends JFrame {
 
     public void setupButtonsAndTimer() { 
         next = new JButton("Next"); 
-        next.setBounds(1100, 500, 200, 40); 
-        next.setFont(new Font("Tahoma", Font.PLAIN, 22)); 
-        next.setBackground(new Color(30, 144, 255)); 
-        next.setForeground(Color.WHITE); 
+        next = QuizTheme.primaryButton("Next", 925, 392, 210, 46);
         next.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e){
                  saveAnswer(); 
@@ -107,14 +109,11 @@ public class Quiz extends JFrame {
             timer = 15; 
         }
     }); 
-        c.add(next);
+        quizCard.add(next);
            
 
         submit = new JButton("Submit"); 
-        submit.setBounds(1100, 550, 200, 40); 
-        submit.setFont(new Font("Tahoma", Font.PLAIN, 22)); 
-        submit.setBackground(new Color(30, 144, 255)); 
-        submit.setForeground(Color.WHITE); 
+        submit = QuizTheme.secondaryButton("Submit", 925, 456, 210, 46);
         submit.setEnabled(false); 
         submit.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e){ 
@@ -136,7 +135,7 @@ public class Quiz extends JFrame {
             scoreFrame.setLocationRelativeTo(null); 
         }
     }); 
-        c.add(submit); 
+        quizCard.add(submit); 
 
         start(count); 
 

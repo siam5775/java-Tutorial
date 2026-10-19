@@ -18,45 +18,35 @@ public class SubjectSelection extends JFrame {
     }
 
     public void initComponents(){
-        c = this.getContentPane();
-        c.setLayout(null);
-        c.setBackground(Color.WHITE);
+        c = QuizTheme.page();
+        this.setContentPane(c);
 
-        f = new Font("Arial", Font.BOLD, 18);
+        f = QuizTheme.BUTTON;
 
-        heading = new JLabel("Welcome, " + username + "! Choose a Subject");
-        heading.setBounds(300, 50, 600, 50);
-        heading.setFont(new Font("Mongolian Baiti", Font.BOLD, 25));
-        heading.setForeground(new Color(30, 144, 254));
-        c.add(heading);
+        JPanel card = QuizTheme.card(270, 52, 660, 350);
+        c.add(card);
 
-        dsButton = new JButton("Data Structure");
-        dsButton.setBounds(400, 150, 200, 35);
+        heading = QuizTheme.label("Welcome, " + username + "!", 42, 28, 580, 42, QuizTheme.TITLE, QuizTheme.INK);
+        card.add(heading);
+
+        JLabel subheading = QuizTheme.label("Choose a subject and get ready for the quiz.", 44, 78, 520, 28, QuizTheme.SUBTITLE, QuizTheme.MUTED);
+        card.add(subheading);
+
+        dsButton = QuizTheme.primaryButton("Data Structure", 46, 145, 255, 48);
         dsButton.setFont(f);
-        dsButton.setBackground(new Color(30, 144, 254));
-        dsButton.setForeground(Color.WHITE);
-        c.add(dsButton);
+        card.add(dsButton);
 
-        oopButton = new JButton("OOP");
-        oopButton.setBounds(400, 200, 200, 35);
+        oopButton = QuizTheme.secondaryButton("OOP", 359, 145, 255, 48);
         oopButton.setFont(f);
-        oopButton.setBackground(new Color(30, 144, 254));
-        oopButton.setForeground(Color.WHITE);
-        c.add(oopButton);
+        card.add(oopButton);
 
-        algoButton = new JButton("Algorithm");
-        algoButton.setBounds(400, 250, 200, 35);
+        algoButton = QuizTheme.secondaryButton("Algorithm", 46, 222, 255, 48);
         algoButton.setFont(f);
-        algoButton.setBackground(new Color(30, 144, 254));
-        algoButton.setForeground(Color.WHITE);
-        c.add(algoButton);
+        card.add(algoButton);
 
-        gkButton = new JButton("General Knowledge");
-        gkButton.setBounds(400, 300, 200, 35);
+        gkButton = QuizTheme.primaryButton("General Knowledge", 359, 222, 255, 48);
         gkButton.setFont(f);
-        gkButton.setBackground(new Color(30, 144, 254));
-        gkButton.setForeground(Color.WHITE);
-        c.add(gkButton);
+        card.add(gkButton);
 
         // SubjectSelection -> Rules
         ActionListener subjectListener = new ActionListener() {
