@@ -1,353 +1,327 @@
+
 package com.practice;
 
-import java.awt.*; 
-import java.awt.event.*; 
-import javax.swing.*; 
+import java.awt.*;
+import java.awt.event.*;
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
+import javax.swing.*;
 
-public class Quiz extends JFrame { 
-    private Container c; 
-    private String questions[][] = new String[5][5]; 
-    private String answers[][] = new String[5][1]; 
-    private String useranswers[][] = new String[5][1]; 
-    private JLabel qno, question, timerLabel; 
-    private JRadioButton opt1, opt2, opt3, opt4; 
-    private ButtonGroup options; 
-    private JButton next, submit; 
+public class Quiz extends JFrame {
+
+    private Container c;
+    private JLabel qno, question, timerLabel;
+    private JRadioButton opt1, opt2, opt3, opt4;
+    private ButtonGroup options;
+    private JButton next, submit;
     private JPanel quizCard;
-    private int timer = 15; 
-    private int count = 0; 
-    private String username, subject; 
-    private Timer countdownTimer; 
 
-    private String dsQuestions[][] = new String[5][5]; 
-    private String dsAnswers[][] = new String[5][1]; 
-    private String oopQuestions[][] = new String[5][5]; 
-    private String oopAnswers[][] = new String[5][1]; 
-    private String algoQuestions[][] = new String[5][5]; 
-    private String algoAnswers[][] = new String[5][1]; 
-    private String gkQuestions[][] = new String[5][5]; 
-    private String gkAnswers[][] = new String[5][1]; 
+    private String username, subject;
 
-    Quiz(String name, String subject) { 
-        this.username = name; 
-        this.subject = subject; 
-        loadQuestions(subject); 
-        useranswers = new String[questions.length][1]; 
-        initComponents(); 
-    } 
+    private List<QuizQuestion> questionList = new ArrayList<>();
+    private String[] userAnswers;
+    private int count = 0;
+    private int timer = 15;
 
-    public void initComponents() { 
-        c = QuizTheme.page(); 
-        this.setContentPane(c);
+    private Timer countdownTimer;
+    private boolean quizReady = false;
+    private boolean quizFinished = false;
 
-        JLabel title = QuizTheme.label(subject + " Quiz", 112, 34, 500, 40, QuizTheme.TITLE, QuizTheme.INK);
+    // Stores one question and its options
+    private static class QuizQuestion {
+        String question;
+        String optionA;
+        String optionB;
+        String optionC;
+        String optionD;
+        String correctAnswer;
+
+        QuizQuestion(
+                String question,
+                String optionA,
+                String optionB,
+                String optionC,
+                String optionD,
+                String correctAnswer) {
+
+            this.question = question;
+            this.optionA = optionA;
+            this.optionB = optionB;
+            this.optionC = optionC;
+            this.optionD = optionD;
+            this.correctAnswer = correctAnswer;
+        }
+    }
+
+    Quiz(String name, String subject) {
+        this.username = name;
+        this.subject = subject;
+
+        loadQuestions();
+
+        if (!questionList.isEmpty()) {
+            userAnswers = new String[questionList.size()];
+            initComponents();
+            quizReady = true;
+        }
+    }
+
+    public boolean hasQuestions() {
+        return quizReady;
+    }
+
+    // Load all questions for the selected subject from MySQL
+    private void loadQuestions() {
+
+        String sql =
+            "SELECT q.question_text, q.option_a, q.option_b, " +
+            "q.option_c, q.option_d, q.correct_answer " +
+            "FROM Question q " +
+            "JOIN Subject s ON q.subject_id = s.subject_id " +
+            "WHERE s.subject_name = ? " +
+            "ORDER BY q.question_id";
+
+        try (Connection con = DBConnection.getConnection();
+             PreparedStatement pst = con.prepareStatement(sql)) {
+
+            pst.setString(1, subject);
+
+            try (ResultSet rs = pst.executeQuery()) {
+
+                while (rs.next()) {
+                    questionList.add(new QuizQuestion(
+                        rs.getString("question_text"),
+                        rs.getString("option_a"),
+                        rs.getString("option_b"),
+                        rs.getString("option_c"),
+                        rs.getString("option_d"),
+                        rs.getString("correct_answer")
+                    ));
+                }
+            }
+
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(
+                null,
+                "Could not load questions from database.\n" +
+                e.getMessage(),
+                "Database Error",
+                JOptionPane.ERROR_MESSAGE
+            );
+            return;
+        }
+
+        if (questionList.isEmpty()) {
+            JOptionPane.showMessageDialog(
+                null,
+                "No questions found for " + subject +
+                ". Please add questions from Admin Panel.",
+                "No Questions",
+                JOptionPane.INFORMATION_MESSAGE
+            );
+        }
+    }
+
+    public void initComponents() {
+
+        c = QuizTheme.page();
+        setContentPane(c);
+
+        JLabel title = QuizTheme.label(
+            subject + " Quiz",
+            112, 34, 500, 40,
+            QuizTheme.TITLE, QuizTheme.INK
+        );
         c.add(title);
 
-        JLabel player = QuizTheme.label("Player: " + username, 114, 76, 420, 26, QuizTheme.SUBTITLE, QuizTheme.MUTED);
+        JLabel player = QuizTheme.label(
+            "Player: " + username,
+            114, 76, 420, 26,
+            QuizTheme.SUBTITLE, QuizTheme.MUTED
+        );
         c.add(player);
 
         quizCard = QuizTheme.card(110, 118, 1220, 590);
         c.add(quizCard);
 
-        qno = new JLabel(); 
-        qno.setBounds(52, 82, 54, 36); 
-        qno.setFont(new Font("Segoe UI", Font.BOLD, 26)); 
-        qno.setForeground(QuizTheme.BRAND_DARK);
-        quizCard.add(qno); 
+        qno = QuizTheme.label(
+            "", 52, 82, 54, 36,
+            new Font("Segoe UI", Font.BOLD, 26),
+            QuizTheme.BRAND_DARK
+        );
+        quizCard.add(qno);
 
-        question = new JLabel(); 
-        question.setBounds(106, 82, 780, 36); 
-        question.setFont(new Font("Segoe UI", Font.BOLD, 24)); 
-        question.setForeground(QuizTheme.INK);
-        quizCard.add(question); 
+        question = QuizTheme.label(
+            "", 106, 82, 780, 50,
+            new Font("Segoe UI", Font.BOLD, 22),
+            QuizTheme.INK
+        );
+        quizCard.add(question);
 
-        timerLabel = new JLabel("Time left: 15 seconds"); 
-        timerLabel.setBounds(900, 36, 260, 36); 
-        timerLabel.setFont(QuizTheme.BODY_BOLD); 
-        timerLabel.setForeground(QuizTheme.DANGER); 
+        timerLabel = new JLabel();
+        timerLabel.setBounds(900, 36, 260, 36);
+        timerLabel.setFont(QuizTheme.BODY_BOLD);
+        timerLabel.setForeground(QuizTheme.DANGER);
         timerLabel.setHorizontalAlignment(SwingConstants.RIGHT);
-        quizCard.add(timerLabel); 
+        quizCard.add(timerLabel);
 
-        opt1 = new JRadioButton(); 
+        opt1 = new JRadioButton();
         QuizTheme.styleOption(opt1, 72, 180, 800, 44);
-        quizCard.add(opt1); 
+        quizCard.add(opt1);
 
-        opt2 = new JRadioButton(); 
+        opt2 = new JRadioButton();
         QuizTheme.styleOption(opt2, 72, 242, 800, 44);
-        quizCard.add(opt2); 
+        quizCard.add(opt2);
 
-        opt3 = new JRadioButton(); 
-
+        opt3 = new JRadioButton();
         QuizTheme.styleOption(opt3, 72, 304, 800, 44);
-        quizCard.add(opt3); 
+        quizCard.add(opt3);
 
-        opt4 = new JRadioButton(); 
+        opt4 = new JRadioButton();
         QuizTheme.styleOption(opt4, 72, 366, 800, 44);
-        quizCard.add(opt4); 
+        quizCard.add(opt4);
 
-        options = new ButtonGroup(); 
-        options.add(opt1); 
-        options.add(opt2); 
-        options.add(opt3); 
-        options.add(opt4); 
+        options = new ButtonGroup();
+        options.add(opt1);
+        options.add(opt2);
+        options.add(opt3);
+        options.add(opt4);
 
-        setupButtonsAndTimer(); 
-    } 
-
-    public void setupButtonsAndTimer() { 
-        next = new JButton("Next"); 
-        next = QuizTheme.primaryButton("Next", 925, 392, 210, 46);
-        next.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e){
-                 saveAnswer(); 
-            if (count == questions.length - 2) { 
-                next.setEnabled(false); 
-                submit.setEnabled(true); 
-            } 
-            count++; 
-            start(count); 
-            timer = 15; 
-        }
-    }); 
+        next = QuizTheme.primaryButton(
+            "Next", 925, 392, 210, 46
+        );
+        next.addActionListener(e -> goToNextQuestion());
         quizCard.add(next);
-           
 
-        submit = new JButton("Submit"); 
-        submit = QuizTheme.secondaryButton("Submit", 925, 456, 210, 46);
-        submit.setEnabled(false); 
-        submit.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e){ 
-            saveAnswer(); 
-            countdownTimer.stop(); 
-            int score = 0; 
-            for (int i = 0; i < useranswers.length; i++) { 
-                if (useranswers[i][0] != null && useranswers[i][0].equals(answers[i][0])) { 
-                    score += 10; 
-                } 
-            } 
-            dispose(); 
-            Score scoreFrame = new Score(username, subject, score); 
-            scoreFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); 
-            scoreFrame.setBounds(400, 150, 750, 550); 
-            scoreFrame.setTitle("Show Score"); 
-            scoreFrame.setResizable(false); 
-            scoreFrame.setVisible(true); 
-            scoreFrame.setLocationRelativeTo(null); 
-        }
-    }); 
-        quizCard.add(submit); 
+        submit = QuizTheme.secondaryButton(
+            "Submit", 925, 456, 210, 46
+        );
+        submit.addActionListener(e -> finishQuiz());
+        quizCard.add(submit);
 
-        start(count); 
+        showQuestion();
 
-        countdownTimer = new Timer(1000, new ActionListener() { 
-            public void actionPerformed(ActionEvent e) { 
-                timerLabel.setText("Time left: " + timer + " seconds"); 
-                timer--; 
-                if (timer < 0) { 
-                    saveAnswer(); 
-                    timer = 15; 
-                    if (count == questions.length - 2) { 
-                        next.setEnabled(false); 
-                        submit.setEnabled(true); 
-                    } 
-                    if (count == questions.length - 1) { 
-                        countdownTimer.stop(); 
-                        submit.doClick(); 
-                        return; 
-                    } 
-                    count++; 
-                    start(count); 
-                } 
-            } 
-        }); 
-        countdownTimer.start(); 
-    } 
- 
+        countdownTimer = new Timer(1000, e -> {
+            timer--;
 
-    public void loadQuestions(String subject) { 
-        // ---------------- Data Structure ---------------- 
-        dsQuestions[0][0]="Which data structure uses LIFO?"; 
-        dsQuestions[0][1]="Queue"; 
-        dsQuestions[0][2]="Stack"; 
-        dsQuestions[0][3]="Array"; 
-        dsQuestions[0][4]="LinkedList"; 
-        dsAnswers[0][0]="Stack"; 
+            timerLabel.setText("Time left: " + timer + " seconds");
 
-        dsQuestions[1][0]="Which data structure uses FIFO?"; 
-        dsQuestions[1][1]="Stack"; 
-        dsQuestions[1][2]="Queue"; 
-        dsQuestions[1][3]="Array"; 
-        dsQuestions[1][4]="Tree"; 
-        dsAnswers[1][0]="Queue"; 
+            if (timer <= 0) {
+                saveAnswer();
 
-        dsQuestions[2][0]="Which is a linear data structure?"; 
-        dsQuestions[2][1]="Tree"; 
-        dsQuestions[2][2]="Graph"; 
-        dsQuestions[2][3]="Array"; 
-        dsQuestions[2][4]="Heap"; 
-        dsAnswers[2][0]="Array"; 
+                if (count == questionList.size() - 1) {
+                    finishQuiz();
+                } else {
+                    count++;
+                    showQuestion();
+                }
+            }
+        });
 
-        dsQuestions[3][0]="Which structure uses nodes and pointers?"; 
-        dsQuestions[3][1]="Array"; 
-        dsQuestions[3][2]="Stack"; 
-        dsQuestions[3][3]="Queue"; 
-        dsQuestions[3][4]="LinkedList"; 
-        dsAnswers[3][0]="LinkedList"; 
-
-        dsQuestions[4][0]="Which is not a primitive data structure?"; 
-        dsQuestions[4][1]="Array"; 
-        dsQuestions[4][2]="Stack"; 
-        dsQuestions[4][3]="Queue"; 
-        dsQuestions[4][4]="LinkedList"; 
-        dsAnswers[4][0]="LinkedList"; 
- 
-
-        // ---------------- OOP ---------------- 
-        oopQuestions[0][0]="Which keyword is used for inheritance in Java?"; 
-        oopQuestions[0][1]="this"; 
-        oopQuestions[0][2]="super"; 
-        oopQuestions[0][3]="extends"; 
-        oopQuestions[0][4]="implements"; 
-        oopAnswers[0][0]="extends"; 
-
-        oopQuestions[1][0]="What is encapsulation?"; 
-        oopQuestions[1][1]="Hiding data"; 
-        oopQuestions[1][2]="Polymorphism"; 
-        oopQuestions[1][3]="Inheritance"; 
-        oopQuestions[1][4]="Abstraction"; 
-        oopAnswers[1][0]="Hiding data"; 
-
-        oopQuestions[2][0]="What is polymorphism?"; 
-        oopQuestions[2][1]="One interface, many forms"; 
-        oopQuestions[2][2]="Data hiding"; 
-        oopQuestions[2][3]="Class extension"; 
-        oopQuestions[2][4]="Object creation"; 
-        oopAnswers[2][0]="One interface, many forms"; 
-
-        oopQuestions[3][0]="Which keyword is used to refer parent class object?"; 
-        oopQuestions[3][1]="super"; 
-        oopQuestions[3][2]="this"; 
-        oopQuestions[3][3]="extends"; 
-        oopQuestions[3][4]="final"; 
-        oopAnswers[3][0]="super"; 
-
-        oopQuestions[4][0]="What is abstraction?"; 
-        oopQuestions[4][1]="Hiding details"; 
-        oopQuestions[4][2]="Multiple objects"; 
-        oopQuestions[4][3]="Looping"; 
-        oopQuestions[4][4]="Inheritance"; 
-        oopAnswers[4][0]="Hiding details"; 
-
-  
-
-        // ---------------- Algorithm ---------------- 
-        algoQuestions[0][0]="Which is a searching algorithm?"; 
-        algoQuestions[0][1]="Bubble Sort"; 
-        algoQuestions[0][2]="Binary Search"; 
-        algoQuestions[0][3]="Selection Sort"; 
-        algoQuestions[0][4]="Merge Sort"; 
-        algoAnswers[0][0]="Binary Search"; 
-
-        algoQuestions[1][0]="Which is a sorting algorithm?"; 
-        algoQuestions[1][1]="Binary Search"; 
-        algoQuestions[1][2]="DFS"; 
-        algoQuestions[1][3]="Merge Sort"; 
-        algoQuestions[1][4]="BFS"; 
-        algoAnswers[1][0]="Merge Sort"; 
-
-        algoQuestions[2][0]="What is complexity of Binary Search?"; 
-        algoQuestions[2][1]="O(n)"; 
-        algoQuestions[2][2]="O(log n)"; 
-        algoQuestions[2][3]="O(n^2)"; 
-        algoQuestions[2][4]="O(n log n)"; 
-        algoAnswers[2][0]="O(log n)"; 
-
-        algoQuestions[3][0]="DFS stands for?"; 
-        algoQuestions[3][1]="Depth First Search"; 
-        algoQuestions[3][2]="Data Flow Search"; 
-        algoQuestions[3][3]="Direct First Search"; 
-        algoQuestions[3][4]="Depth Function Search"; 
-        algoAnswers[3][0]="Depth First Search"; 
-
-        algoQuestions[4][0]="BFS stands for?"; 
-        algoQuestions[4][1]="Breadth First Search"; 
-        algoQuestions[4][2]="Binary First Search"; 
-        algoQuestions[4][3]="Breadth Function Search"; 
-        algoQuestions[4][4]="Best First Search"; 
-        algoAnswers[4][0]="Breadth First Search"; 
- 
-
-        // ---------------- General Knowledge ---------------- 
-        gkQuestions[0][0]="Capital of Bangladesh?"; 
-        gkQuestions[0][1]="Dhaka"; 
-        gkQuestions[0][2]="Chittagong"; 
-        gkQuestions[0][3]="Khulna"; 
-        gkQuestions[0][4]="Barishal"; 
-        gkAnswers[0][0]="Dhaka"; 
-
-        gkQuestions[1][0]="Who wrote Harry Potter?"; 
-        gkQuestions[1][1]="J.K. Rowling"; 
-        gkQuestions[1][2]="Tolkien"; 
-        gkQuestions[1][3]="Lewis"; 
-        gkQuestions[1][4]="Rowling"; 
-        gkAnswers[1][0]="J.K. Rowling"; 
-
-        gkQuestions[2][0]="Which planet is known as Red Planet?"; 
-        gkQuestions[2][1]="Mars"; 
-        gkQuestions[2][2]="Venus"; 
-        gkQuestions[2][3]="Jupiter"; 
-        gkQuestions[2][4]="Saturn"; 
-        gkAnswers[2][0]="Mars"; 
-
-        gkQuestions[3][0]="Which is largest ocean?"; 
-        gkQuestions[3][1]="Atlantic"; 
-        gkQuestions[3][2]="Pacific"; 
-        gkQuestions[3][3]="Indian"; 
-        gkQuestions[3][4]="Arctic"; 
-        gkAnswers[3][0]="Pacific"; 
-
-        gkQuestions[4][0]="Who discovered gravity?"; 
-        gkQuestions[4][1]="Newton"; 
-        gkQuestions[4][2]="Einstein"; 
-        gkQuestions[4][3]="Galileo"; 
-        gkQuestions[4][4]="Tesla"; 
-        gkAnswers[4][0]="Newton"; 
-
-         
-
-        if(subject.equals("Data Structure")) { 
-            questions = dsQuestions; 
-            answers = dsAnswers; 
-        } 
-        else if(subject.equals("OOP")) { 
-            questions = oopQuestions; 
-            answers = oopAnswers; 
-        } 
-        else if(subject.equals("Algorithm")) { 
-            questions = algoQuestions; 
-            answers = algoAnswers; 
-        } 
-        else if(subject.equals("General Knowledge")) { 
-            questions = gkQuestions; 
-            answers = gkAnswers; 
-        } 
+        countdownTimer.start();
     }
-    public void start(int count) { 
-        qno.setText("" + (count + 1) + ". "); 
-        question.setText(questions[count][0]); 
-        opt1.setText(questions[count][1]); 
-        opt2.setText(questions[count][2]); 
-        opt3.setText(questions[count][3]); 
-        opt4.setText(questions[count][4]); 
-        options.clearSelection(); 
-    } 
 
-    public void saveAnswer() { 
-        String answer = ""; 
-        if (opt1.isSelected()) answer = opt1.getText(); 
-        else if (opt2.isSelected()) answer = opt2.getText(); 
-        else if (opt3.isSelected()) answer = opt3.getText(); 
-        else if (opt4.isSelected()) answer = opt4.getText(); 
-        useranswers[count][0] = answer; 
-    }  
+    // Display the current question
+    private void showQuestion() {
+
+        QuizQuestion q = questionList.get(count);
+
+        qno.setText((count + 1) + ". ");
+        question.setText("<html>" + escapeHtml(q.question) + "</html>");
+
+        opt1.setText(q.optionA);
+        opt2.setText(q.optionB);
+        opt3.setText(q.optionC);
+        opt4.setText(q.optionD);
+
+        options.clearSelection();
+
+        // Update the buttons for the current question
+        boolean lastQuestion = count == questionList.size() - 1;
+
+        next.setEnabled(!lastQuestion);
+        submit.setEnabled(lastQuestion);
+
+        timer = 15;
+        timerLabel.setText("Time left: " + timer + " seconds");
+    }
+
+    private String escapeHtml(String text) {
+        if (text == null) {
+            return "";
+        }
+
+        return text.replace("&", "&amp;")
+                   .replace("<", "&lt;")
+                   .replace(">", "&gt;");
+    }
+
+    // Save the selected option as A, B, C or D
+    private void saveAnswer() {
+
+        if (opt1.isSelected()) {
+            userAnswers[count] = "A";
+        } else if (opt2.isSelected()) {
+            userAnswers[count] = "B";
+        } else if (opt3.isSelected()) {
+            userAnswers[count] = "C";
+        } else if (opt4.isSelected()) {
+            userAnswers[count] = "D";
+        } else {
+            userAnswers[count] = null;
+        }
+    }
+
+    private void goToNextQuestion() {
+
+        if (quizFinished || count >= questionList.size() - 1) {
+            return;
+        }
+
+        saveAnswer();
+        count++;
+        showQuestion();
+    }
+
+    // Calculate score and open the Score window
+    private void finishQuiz() {
+
+        if (quizFinished) {
+            return;
+        }
+
+        saveAnswer();
+        quizFinished = true;
+
+        if (countdownTimer != null) {
+            countdownTimer.stop();
+        }
+
+        int score = 0;
+
+        for (int i = 0; i < questionList.size(); i++) {
+
+            String correct = questionList.get(i).correctAnswer;
+            String selected = userAnswers[i];
+
+            if (selected != null && correct != null &&
+                selected.trim().equalsIgnoreCase(correct.trim())) {
+                score += 10;
+            }
+        }
+
+        dispose();
+
+        Score scoreFrame = new Score(
+            username, subject, score, questionList.size() * 10
+        );
+
+        scoreFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        scoreFrame.setSize(750, 550);
+        scoreFrame.setTitle("Show Score");
+        scoreFrame.setResizable(false);
+        scoreFrame.setLocationRelativeTo(null);
+        scoreFrame.setVisible(true);
+    }
 }
