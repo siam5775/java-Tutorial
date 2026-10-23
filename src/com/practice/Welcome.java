@@ -50,6 +50,7 @@ public class Welcome extends JFrame {
         );
         card.add(heading);
 
+        // Subheading
         subheading = QuizTheme.label(
             "Choose your login option",
             38, 72, 310, 28,
@@ -58,33 +59,36 @@ public class Welcome extends JFrame {
         );
         card.add(subheading);
 
-        // Admin Login button
+        // Admin Login Button
         adminButton = QuizTheme.primaryButton(
             "Admin Login", 38, 125, 314, 42
         );
         card.add(adminButton);
 
-        // Student Login button
+        // Student Login Button
         studentButton = QuizTheme.primaryButton(
             "Student Login", 38, 183, 314, 42
         );
         card.add(studentButton);
 
-        // Student Registration button
+        // Student Registration Button
         registerButton = QuizTheme.secondaryButton(
             "Student Registration", 38, 241, 314, 42
         );
         card.add(registerButton);
 
-        // Admin Login action
+        // Admin Login Action
         adminButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
 
                 dispose();
 
                 AdminLogin admin = new AdminLogin();
+
                 admin.setTitle("Admin Login");
-                admin.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+                admin.setDefaultCloseOperation(
+                    JFrame.EXIT_ON_CLOSE
+                );
                 admin.setSize(1200, 500);
                 admin.setLocationRelativeTo(null);
                 admin.setResizable(false);
@@ -92,32 +96,42 @@ public class Welcome extends JFrame {
             }
         });
 
-        // Student Login action
+        // Student Login Action
         studentButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
 
                 dispose();
 
                 LoginInterface login = new LoginInterface();
+
                 login.setTitle("Quiz Game");
                 login.setSize(1200, 500);
                 login.setLocationRelativeTo(null);
-                login.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+                login.setDefaultCloseOperation(
+                    JFrame.EXIT_ON_CLOSE
+                );
                 login.setResizable(false);
                 login.setVisible(true);
             }
         });
 
-        // Student Registration action
+        // Student Registration Action
         registerButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
 
-                JOptionPane.showMessageDialog(
-                    Welcome.this,
-                    "Student Registration will be connected next.",
-                    "Student Registration",
-                    JOptionPane.INFORMATION_MESSAGE
+                dispose();
+
+                StudentRegistration registration =
+                    new StudentRegistration();
+
+                registration.setTitle("Student Registration");
+                registration.setSize(1200, 500);
+                registration.setDefaultCloseOperation(
+                    JFrame.EXIT_ON_CLOSE
                 );
+                registration.setResizable(false);
+                registration.setLocationRelativeTo(null);
+                registration.setVisible(true);
             }
         });
     }
@@ -128,9 +142,12 @@ public class Welcome extends JFrame {
             public void run() {
 
                 Welcome frame = new Welcome();
+
                 frame.setTitle("Online Quiz Management System");
                 frame.setSize(1200, 500);
-                frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+                frame.setDefaultCloseOperation(
+                    JFrame.EXIT_ON_CLOSE
+                );
                 frame.setResizable(false);
                 frame.setLocationRelativeTo(null);
                 frame.setVisible(true);
